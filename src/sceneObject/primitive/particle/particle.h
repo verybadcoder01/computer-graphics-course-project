@@ -53,6 +53,7 @@ public:
 
     void update(float dt);
     const std::vector<Particle>& getParticles() const { return particles; }
+    const ParticleSystemParams& getParams() const noexcept { return params; }
 
     size_t getParticlesDataSizeBytes() const noexcept { return particles.size() * sizeof(Particle); }
     const void* getRawParticlesData() const { return particles.data(); }

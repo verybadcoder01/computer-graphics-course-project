@@ -2,6 +2,7 @@
 
 #include "sceneObject/baseObject.h"
 #include "glad/glad.h"
+#include <functional>
 #include <map>
 
 struct GPUBufferHandles {
@@ -9,6 +10,8 @@ struct GPUBufferHandles {
         clear();
     }
 
+    GPUBufferHandles(GLuint vao, GLuint vbo, GLuint ebo, GLsizei elementCount): 
+        VAO(vao), VBO(vbo), EBO(ebo), instanceVBO(0), elementCount(elementCount) {}
     GPUBufferHandles() = default;
     GPUBufferHandles(const GPUBufferHandles&) = delete;
     GPUBufferHandles& operator=(const GPUBufferHandles&) = delete;
@@ -68,8 +71,8 @@ public:
     GPUCacheManager(const GPUCacheManager&) = delete;
     GPUCacheManager& operator=(const GPUCacheManager&) = delete;
 
-    template<typename ObjectType, typename UploadFunc>
-    const GPUBufferHandles& getOrUpload(ObjectType &obj, UploadFunc upload);
+    template<typename ObjectType>
+    const GPUBufferHandles& getOrUpload(const ObjectType &obj, std::function<GPUBufferHandles(const ObjectType&)> upload);
     void cleanupExpired();
 
     void clearAll() noexcept;

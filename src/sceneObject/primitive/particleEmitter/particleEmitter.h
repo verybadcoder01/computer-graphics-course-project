@@ -14,6 +14,8 @@ public:
     void update(float dt) override;
     bool isVisible() const override { return visualMesh ? true : false; }
 
+    const ParticleSystemParams& getParticlesParams() const noexcept { return particles->getParams(); };
+
     size_t getParticleCount() const noexcept { return particles->getParticles().size(); }
     size_t getParticlesDataSizeBytes() const noexcept { return particles->getParticlesDataSizeBytes(); }
     const void* getRawParticlesData() const { return particles->getRawParticlesData(); }

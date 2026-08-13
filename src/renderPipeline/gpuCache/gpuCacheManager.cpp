@@ -31,8 +31,8 @@ void GPUBufferHandles::deleteInstanceVBO() {
     }
 }
 
-template<typename ObjectType, typename UploadFunc>
-const GPUBufferHandles& GPUCacheManager::getOrUpload(ObjectType &obj, UploadFunc upload) {
+template<typename ObjectType>
+const GPUBufferHandles& GPUCacheManager::getOrUpload(const ObjectType &obj, std::function<GPUBufferHandles(const ObjectType&)> upload) {
     std::weak_ptr<const BaseObject> key = obj.shared_from_this();
     auto it = gpuCache.find(key);
 
