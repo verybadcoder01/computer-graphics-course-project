@@ -14,7 +14,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Fountain Simulation Test", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(800, 600, "Fountain Simulation Test", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -51,7 +51,7 @@ int main() {
         ImGui::Render();
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);

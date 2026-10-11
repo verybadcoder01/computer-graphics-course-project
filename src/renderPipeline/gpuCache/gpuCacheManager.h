@@ -1,21 +1,24 @@
 #pragma once
 
-#include "sceneObject/baseObject.h"
-#include "glad/glad.h"
 #include <functional>
 #include <map>
+#include "glad/glad.h"
+#include "sceneObject/baseObject.h"
 
 struct GPUBufferHandles {
-    ~GPUBufferHandles() {
-        clear();
-    }
+    ~GPUBufferHandles() { clear(); }
 
-    GPUBufferHandles(GLuint vao, GLuint vbo, GLuint ebo, GLsizei elementCount): 
-        VAO(vao), VBO(vbo), EBO(ebo), instanceVBO(0), elementCount(elementCount) {}
+    GPUBufferHandles(GLuint vao, GLuint vbo, GLuint ebo, GLsizei elementCount)
+        : VAO(vao), VBO(vbo), EBO(ebo), instanceVBO(0), elementCount(elementCount) {}
     GPUBufferHandles() = default;
-    GPUBufferHandles(const GPUBufferHandles&) = delete;
-    GPUBufferHandles& operator=(const GPUBufferHandles&) = delete;
-    GPUBufferHandles(GPUBufferHandles&& other) noexcept : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO), instanceVBO(other.instanceVBO), elementCount(other.elementCount) {
+    GPUBufferHandles(const GPUBufferHandles &) = delete;
+    GPUBufferHandles &operator=(const GPUBufferHandles &) = delete;
+    GPUBufferHandles(GPUBufferHandles &&other) noexcept
+        : VAO(other.VAO),
+          VBO(other.VBO),
+          EBO(other.EBO),
+          instanceVBO(other.instanceVBO),
+          elementCount(other.elementCount) {
         other.VAO = 0;
         other.VBO = 0;
         other.EBO = 0;
@@ -23,33 +26,36 @@ struct GPUBufferHandles {
         other.elementCount = 0;
     }
 
-    GPUBufferHandles& operator=(GPUBufferHandles&& other) noexcept {
+    GPUBufferHandles &operator=(GPUBufferHandles &&other) noexcept {
         if (this != &other) {
             clear();
-            VAO = other.VAO; 
-            VBO = other.VBO; 
-            EBO = other.EBO; 
+            VAO = other.VAO;
+            VBO = other.VBO;
+            EBO = other.EBO;
             instanceVBO = other.instanceVBO;
             elementCount = other.elementCount;
 
-            other.VAO = 0; other.VBO = 0; other.EBO = 0; other.elementCount = 0;
+            other.VAO = 0;
+            other.VBO = 0;
+            other.EBO = 0;
+            other.elementCount = 0;
             other.instanceVBO = 0;
         }
         return *this;
     }
 
     GLuint getVAO() const { return VAO; }
-    GLuint& getVAO() { return VAO; }
+    GLuint &getVAO() { return VAO; }
     GLuint getVBO() const { return VBO; }
-    GLuint& getVBO() { return VBO; }
+    GLuint &getVBO() { return VBO; }
     GLuint getEBO() const { return EBO; }
-    GLuint& getEBO() { return EBO; }
+    GLuint &getEBO() { return EBO; }
     GLuint getInstanceVBO() const { return instanceVBO; }
-    GLuint& getInstanceVBO() { return instanceVBO; }
+    GLuint &getInstanceVBO() { return instanceVBO; }
     GLsizei getElementCount() const { return elementCount; }
-    GLsizei& getElementCount() { return elementCount; }
+    GLsizei &getElementCount() { return elementCount; }
 
-private:
+   private:
     GLuint VAO = 0;
     GLuint VBO = 0;
     GLuint EBO = 0;
@@ -64,19 +70,34 @@ private:
 };
 
 class GPUCacheManager {
-public:
+   public:
     GPUCacheManager() = default;
     ~GPUCacheManager() = default;
 
-    GPUCacheManager(const GPUCacheManager&) = delete;
-    GPUCacheManager& operator=(const GPUCacheManager&) = delete;
+    GPUCacheManager(const GPUCacheManager &) = delete;
+    GPUCacheManager &operator=(const GPUCacheManager &) = delete;
 
-    template<typename ObjectType>
-    const GPUBufferHandles& getOrUpload(const ObjectType &obj, std::function<GPUBufferHandles(const ObjectType&)> upload);
+    template <typename ObjectType>
+    const GPUBufferHandles &getOrUpload(
+        const ObjectType &obj,
+        std::function<GPUBufferHandles(const ObjectType &)> upload) {
+        std::weak_ptr<const BaseObject> key = obj.shared_from_this();
+        auto it = gpuCache.find(key);
+
+        if (it == gpuCache.end()) {
+            GPUBufferHandles handles = upload(obj);
+            auto [insertedIt, success] = gpuCache.emplace(key, std::move(handles));
+            it = insertedIt;
+        }
+        return it->second;
+    }
     void cleanupExpired();
 
     void clearAll() noexcept;
 
-private:
-    std::map<std::weak_ptr<const BaseObject>, GPUBufferHandles, std::owner_less<std::weak_ptr<const BaseObject>>> gpuCache;
+   private:
+    std::map<std::weak_ptr<const BaseObject>,
+             GPUBufferHandles,
+             std::owner_less<std::weak_ptr<const BaseObject>>>
+        gpuCache;
 };

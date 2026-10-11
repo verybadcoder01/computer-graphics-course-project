@@ -1,13 +1,14 @@
 #include "objModel.h"
+#include <filesystem>
+#include <fstream>
+#include <source_location>
 #include "exceptions/model/modelExceptions.h"
 #include "sceneObject/primitive/model/model.h"
-#include <filesystem>
-#include <source_location>
-#include <fstream>
 
-ObjModel::ObjModel(const std::string &name, 
-                 const std::filesystem::path &filepath, 
-                 const std::filesystem::path &texturePath): filepath(filepath) {
+ObjModel::ObjModel(const std::string &name,
+                   const std::filesystem::path &filepath,
+                   const std::filesystem::path &texturePath)
+    : filepath(filepath) {
     this->name = name;
     loadFromOBJ(filepath);
 
@@ -20,13 +21,12 @@ void ObjModel::loadTexture(const std::filesystem::path &texturePath) {
     texture = std::make_shared<Texture>(texturePath);
 }
 
-void ObjModel::loadFromOBJ(const std::filesystem::path& path) {
+void ObjModel::loadFromOBJ(const std::filesystem::path &path) {
     std::ifstream file(path);
     if (!file.is_open()) {
         throw FailedToLoadModelException(
-            std::format("Could not load model from path {}", filepath.string()), 
-            std::source_location::current()
-        );
+            std::format("Could not load model from path {}", filepath.string()),
+            std::source_location::current());
     }
 
     std::vector<glm::vec3> tempPositions;
@@ -50,29 +50,26 @@ void ObjModel::loadFromOBJ(const std::filesystem::path& path) {
             glm::vec3 pos;
             ss >> pos.x >> pos.y >> pos.z;
             tempPositions.push_back(pos);
-        }
-        else if (prefix == "vn") {
+        } else if (prefix == "vn") {
             glm::vec3 norm;
             ss >> norm.x >> norm.y >> norm.z;
             tempNormals.push_back(norm);
-        }
-        else if (prefix == "vt") {
+        } else if (prefix == "vt") {
             glm::vec2 uv;
             ss >> uv.x >> uv.y;
             tempTexCoords.push_back(uv);
-        }
-        else if (prefix == "f") {
+        } else if (prefix == "f") {
             std::string vertexStr;
             for (int i = 0; i < 3; ++i) {
                 ss >> vertexStr;
                 int posIdx = 0, uvIdx = 0, normIdx = 0;
-                
-                if (sscanf(vertexStr.c_str(), "%d/%d/%d", &posIdx, &uvIdx, &normIdx) == 3) {}
-                else if (sscanf(vertexStr.c_str(), "%d//%d", &posIdx, &normIdx) == 2) {
+
+                if (sscanf(vertexStr.c_str(), "%d/%d/%d", &posIdx, &uvIdx, &normIdx) == 3) {
+                } else if (sscanf(vertexStr.c_str(), "%d//%d", &posIdx, &normIdx) == 2) {
                     uvIdx = 0;
-                }
-                else if (sscanf(vertexStr.c_str(), "%d", &posIdx) == 1) {
-                    uvIdx = 0; normIdx = 0;
+                } else if (sscanf(vertexStr.c_str(), "%d", &posIdx) == 1) {
+                    uvIdx = 0;
+                    normIdx = 0;
                 }
 
                 Vertex vertex{};
@@ -89,7 +86,7 @@ void ObjModel::loadFromOBJ(const std::filesystem::path& path) {
                 tempVertexes.push_back(vertex);
                 tempIndices.push_back(static_cast<uint32_t>(tempVertexes.size() - 1));
             }
-        } // остальные варианты игнорируем (пока?)
+        }  // остальные варианты игнорируем (пока?)
     }
 
     vertices = std::move(tempVertexes);

@@ -1,8 +1,8 @@
 #include "renderPipeline.h"
+#include <memory>
 #include "renderPipeline/gpuCache/gpuCacheManager.h"
 #include "renderPipeline/renderPasses/renderPass.h"
 #include "scene/scene.h"
-#include <memory>
 
 RenderPipeline::RenderPipeline(std::shared_ptr<GPUCacheManager> cache) {
     context.gpuCache = std::move(cache);

@@ -69,3 +69,6 @@ Testing/
 
 libs/
 .vscode/
+docs/
+# Local Claude notes
+CLAUDE.local.md

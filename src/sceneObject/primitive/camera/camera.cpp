@@ -1,11 +1,11 @@
 #include "camera.h"
-#include "visitor/objectVisitor.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/geometric.hpp>
 #include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
 #include <memory>
+#include "visitor/objectVisitor.h"
 
 bool ViewPyramid::intersects(const AABoundBox &box, const glm::mat4 &modelMatrix) const {
     glm::vec3 localCenter = (box.max + box.min) * 0.5f;
@@ -17,8 +17,8 @@ bool ViewPyramid::intersects(const AABoundBox &box, const glm::mat4 &modelMatrix
     glm::vec3 forward = glm::vec3(modelMatrix[2]);
     for (const auto &plane : planes) {
         float radius = localExtents.x * std::abs(glm::dot(plane.normal, right)) +
-            localExtents.y * std::abs(glm::dot(plane.normal, up)) +
-            localExtents.z * std::abs(glm::dot(plane.normal, forward));
+                       localExtents.y * std::abs(glm::dot(plane.normal, up)) +
+                       localExtents.z * std::abs(glm::dot(plane.normal, forward));
         float signedDistance = plane.getSignedDistanceToPlane(worldCenter);
 
         if (signedDistance < -radius) {
@@ -28,12 +28,13 @@ bool ViewPyramid::intersects(const AABoundBox &box, const glm::mat4 &modelMatrix
     return true;
 }
 
-Camera::Camera(const glm::vec3 &startPosition, float fov, float aspectRatio): fov(fov), aspectRatio(aspectRatio) {
+Camera::Camera(const glm::vec3 &startPosition, float fov, float aspectRatio)
+    : fov(fov), aspectRatio(aspectRatio) {
     this->position = glm::vec4(startPosition, 1.0f);
     updateCameraVectors();
 }
 
-void Camera::accept(ObjectVisitor &visitor){
+void Camera::accept(ObjectVisitor &visitor) {
     visitor.visit(*this);
 }
 
@@ -49,14 +50,14 @@ glm::mat4 Camera::getProjectionMatrix() const {
 std::unique_ptr<ViewPyramid> Camera::getViewPyramid() const {
     std::unique_ptr<ViewPyramid> result = std::make_unique<ViewPyramid>();
     glm::mat4 vp = getProjectionMatrix() * getViewMatrix();
-    
+
     std::array<glm::vec4, 4> rows;
-    for (size_t i = 0; i < 4; ++i){
+    for (size_t i = 0; i < 4; ++i) {
         rows[i] = glm::vec4(vp[0][i], vp[1][i], vp[2][i], vp[3][i]);
     }
 
-    for (const auto side: {ViewPyramid::Left, ViewPyramid::Right, ViewPyramid::Bottom,
-        ViewPyramid::Top, ViewPyramid::Near, ViewPyramid::Far}) {
+    for (const auto side : {ViewPyramid::Left, ViewPyramid::Right, ViewPyramid::Bottom,
+                            ViewPyramid::Top, ViewPyramid::Near, ViewPyramid::Far}) {
         if (side % 2 == 0) {
             result->setPlane(Plane(rows[3] + rows[side / 2]), side);
         } else {
@@ -66,15 +67,10 @@ std::unique_ptr<ViewPyramid> Camera::getViewPyramid() const {
 
     glm::mat4 invVP = glm::inverse(vp);
     size_t index = 0;
-    for (int x = 0; x < 2; ++x){
-        for (int y = 0; y < 2; ++y){
-            for (int z = 0; z < 2; ++z){
-                glm::vec4 vertexNDC = glm::vec4(
-                    x ? 1 : -1,
-                    y ? 1 : -1,
-                    z ? 1 : -1,
-                    1
-                );
+    for (int x = 0; x < 2; ++x) {
+        for (int y = 0; y < 2; ++y) {
+            for (int z = 0; z < 2; ++z) {
+                glm::vec4 vertexNDC = glm::vec4(x ? 1 : -1, y ? 1 : -1, z ? 1 : -1, 1);
                 glm::vec4 worldVertex = invVP * vertexNDC;
                 result->setVertex(glm::vec3(worldVertex) / worldVertex.w, index);
                 index++;
@@ -86,7 +82,7 @@ std::unique_ptr<ViewPyramid> Camera::getViewPyramid() const {
 
 void Camera::updateCameraVectors() {
     glm::vec3 newFront;
-    newFront.x = cos(glm::radians(yaw)) * cos (glm::radians(pitch));
+    newFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     newFront.y = sin(glm::radians(pitch));
     newFront.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     front = glm::normalize(newFront);
@@ -95,7 +91,7 @@ void Camera::updateCameraVectors() {
     up = glm::normalize(glm::cross(right, front));
 }
 
-void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) { 
+void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
     yaw += xoffset;

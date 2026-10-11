@@ -15,7 +15,7 @@ void LightSource::updateLightSpaceMatrix(const ViewPyramid &cameraView) {
 
     for (const auto &vertex : cameraView.getVertexes()) {
         glm::vec4 trVertex = lightView * glm::vec4(vertex, 1.0f);
-        
+
         minAABB.x = std::min(minAABB.x, trVertex.x);
         maxAABB.x = std::max(maxAABB.x, trVertex.x);
 

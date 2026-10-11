@@ -1,11 +1,11 @@
 #pragma once
 
-#include "shadow/shadowMap/shadowMap.h"
-#include "shaders/shader.h"
 #include <memory>
+#include "shaders/shader.h"
+#include "shadow/shadowMap/shadowMap.h"
 
 class ShadowManager {
-public:
+   public:
     ShadowManager(uint32_t resolution = 2048);
 
     void beginShadowPass();
@@ -17,7 +17,7 @@ public:
     uint32_t getResolution() const noexcept { return shadowMap ? shadowMap->getWidth() : 0; }
     GLuint getDepthTexture() const noexcept { return shadowMap ? shadowMap->getDepthTexture() : 0; }
 
-protected:
+   protected:
     std::shared_ptr<Shader> shadowShader;
     std::unique_ptr<ShadowMap> shadowMap;
 };

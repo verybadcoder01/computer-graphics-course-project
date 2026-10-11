@@ -1,16 +1,12 @@
 #pragma once
 
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/geometric.hpp>
 #include "sceneObject/primitive/camera/camera.h"
 #include "sceneObject/primitive/primitive.h"
 #include "visitor/objectVisitor.h"
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/geometric.hpp>
 
-enum class LightType {
-    Directional = 0,
-    Point,
-    Spot
-};
+enum class LightType { Directional = 0, Point, Spot };
 
 struct AttenuationParams {
     float constant = 1;
@@ -19,26 +15,23 @@ struct AttenuationParams {
 };
 
 class LightSource : public Primitive {
-public:
-    LightSource(const AttenuationParams& atParams, LightType type = LightType::Point): atParams(atParams), type(type) {}
+   public:
+    LightSource(const AttenuationParams &atParams, LightType type = LightType::Point)
+        : atParams(atParams), type(type) {}
     virtual ~LightSource() override = default;
 
-    void accept(ObjectVisitor &visitor) override {
-        visitor.visit(*this);
-    }
+    void accept(ObjectVisitor &visitor) override { visitor.visit(*this); }
 
     void updateLightSpaceMatrix(const ViewPyramid &cameraView);
-    const glm::mat4& getLightSpaceMatrix() const {
-        return lightSpaceMatrix;
-    }
+    const glm::mat4 &getLightSpaceMatrix() const { return lightSpaceMatrix; }
 
     void setDirection(const glm::vec3 &dir) { direction = glm::normalize(dir); }
-    const glm::vec3& getDirection() const { return direction; }
+    const glm::vec3 &getDirection() const { return direction; }
 
     void setColor(const glm::vec3 &col) { color = col; }
     glm::vec3 getColor() const { return color * intensity; }
 
-    const AttenuationParams& getAttenuationParams() const { return atParams; }
+    const AttenuationParams &getAttenuationParams() const { return atParams; }
 
     bool isVisible() const noexcept override { return false; }
     bool createsShadows() const noexcept { return castsShadows; }
@@ -46,7 +39,7 @@ public:
 
     void update(float dt) override {};
 
-protected:
+   protected:
     LightType type = LightType::Point;
     glm::vec3 color{1.0f};
     glm::vec3 direction{0, -1, 0};

@@ -12,10 +12,10 @@ bool isZeroDouble(float val) {
 glm::mat4 BaseObject::getModelMatrix() const {
     glm::mat4 mat(1);
     mat = glm::translate(mat, glm::vec3(position));
-    if (!isZeroDouble(rotation.z)){
+    if (!isZeroDouble(rotation.z)) {
         mat = glm::rotate(mat, glm::radians(rotation.z), glm::vec3(0, 0, 1));
     }
-    if (!isZeroDouble(rotation.y)){
+    if (!isZeroDouble(rotation.y)) {
         mat = glm::rotate(mat, glm::radians(rotation.y), glm::vec3(0, 1, 0));
     }
     if (!isZeroDouble(rotation.x)) {

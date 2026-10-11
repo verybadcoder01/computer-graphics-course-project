@@ -1,11 +1,11 @@
 #pragma once
 
-#include "sceneObject/primitive/camera/camera.h"
-#include "sceneObject/primitive/lightSource/lightSource.h"
-#include "renderPipeline/gpuCache/gpuCacheManager.h"
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <memory>
-#include <glad/glad.h>
+#include "renderPipeline/gpuCache/gpuCacheManager.h"
+#include "sceneObject/primitive/camera/camera.h"
+#include "sceneObject/primitive/lightSource/lightSource.h"
 
 struct RenderPipelineContext {
     int screenWidth = 0;

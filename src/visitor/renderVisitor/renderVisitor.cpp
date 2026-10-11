@@ -1,20 +1,26 @@
 #include "renderVisitor.h"
+#include <glad/glad.h>
 #include "renderPipeline/meshUploader/meshUploader.h"
 #include "renderPipeline/renderContext.h"
 #include "sceneObject/primitive/model/model.h"
 #include "sceneObject/primitive/model/texture/texture.h"
 #include "sceneObject/primitive/particleEmitter/particleEmitter.h"
 #include "shaders/shader.h"
-#include <glad/glad.h>
 
-OpenGLRenderVisitor::OpenGLRenderVisitor(const RenderContext& context, GPUCacheManager& cacheManager, const Shader& defaultShader, const Shader& particleShader)
-        : ctx(context), cache(cacheManager), defaultShader(defaultShader), particleShader(particleShader) {}
+OpenGLRenderVisitor::OpenGLRenderVisitor(const RenderContext &context,
+                                         GPUCacheManager &cacheManager,
+                                         const Shader &defaultShader,
+                                         const Shader &particleShader)
+    : ctx(context),
+      cache(cacheManager),
+      defaultShader(defaultShader),
+      particleShader(particleShader) {}
 
-void OpenGLRenderVisitor::visit(Model& model) {
-    const auto& handles = cache.get().getOrUpload<Model>(model, MeshUploader::uploadModelToGPU);
+void OpenGLRenderVisitor::visit(Model &model) {
+    const auto &handles = cache.get().getOrUpload<Model>(model, MeshUploader::uploadModelToGPU);
 
-    const Shader& defShader = defaultShader.get();
-    const RenderContext& rCtx = ctx.get();
+    const Shader &defShader = defaultShader.get();
+    const RenderContext &rCtx = ctx.get();
     defShader.use();
     defShader.setMat4("u_View", rCtx.viewMatrix);
     defShader.setMat4("u_Projection", rCtx.projMatrix);
@@ -26,13 +32,13 @@ void OpenGLRenderVisitor::visit(Model& model) {
         defShader.setVec3("u_LightPos", rCtx.mainLight->getPosition());
         defShader.setVec3("u_LightColor", rCtx.mainLight->getColor());
 
-        const auto& att = rCtx.mainLight->getAttenuationParams();
+        const auto &att = rCtx.mainLight->getAttenuationParams();
         defShader.setFloat("u_LightConstant", att.constant);
         defShader.setFloat("u_LightLinear", att.linear);
         defShader.setFloat("u_LightQuadratic", att.quadratic);
     }
 
-    if (const auto* tex = model.getTexture(); tex && tex->isLoaded()) {
+    if (const auto *tex = model.getTexture(); tex && tex->isLoaded()) {
         tex->bind(0);
         defShader.setInt("u_Texture", 0);
     }
@@ -43,19 +49,21 @@ void OpenGLRenderVisitor::visit(Model& model) {
     }
 
     glBindVertexArray(handles.getVAO());
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(handles.getElementCount()), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(handles.getElementCount()), GL_UNSIGNED_INT,
+                   nullptr);
     glBindVertexArray(0);
 }
 
-void OpenGLRenderVisitor::visit(ParticleEmitter& emitter) {
+void OpenGLRenderVisitor::visit(ParticleEmitter &emitter) {
     if (emitter.getParticleCount() == 0) {
         return;
     }
 
-    const auto& handles = cache.get().getOrUpload<ParticleEmitter>(emitter, MeshUploader::uploadParticleEmitterToGPU);
+    const auto &handles =
+        cache.get().getOrUpload<ParticleEmitter>(emitter, MeshUploader::uploadParticleEmitterToGPU);
 
-    const Shader& pShader = particleShader.get();
-    const RenderContext& rCtx = ctx.get();
+    const Shader &pShader = particleShader.get();
+    const RenderContext &rCtx = ctx.get();
     pShader.use();
     pShader.setMat4("u_View", rCtx.viewMatrix);
     pShader.setMat4("u_Projection", rCtx.projMatrix);
@@ -73,11 +81,12 @@ void OpenGLRenderVisitor::visit(ParticleEmitter& emitter) {
     glDepthMask(GL_FALSE);
 
     glBindBuffer(GL_ARRAY_BUFFER, handles.getInstanceVBO());
-    glBufferData(GL_ARRAY_BUFFER, emitter.getParticlesDataSizeBytes(), emitter.getRawParticlesData(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, emitter.getParticlesDataSizeBytes(),
+                 emitter.getRawParticlesData(), GL_DYNAMIC_DRAW);
 
     glBindVertexArray(handles.getVAO());
     glDrawArraysInstanced(GL_TRIANGLES, 0, handles.getElementCount(), emitter.getParticleCount());
-    
+
     glBindVertexArray(0);
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);

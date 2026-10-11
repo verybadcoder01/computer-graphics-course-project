@@ -4,7 +4,7 @@
 #include "scene/scene.h"
 
 class IRenderPass {
-public:
+   public:
     virtual ~IRenderPass() = default;
 
     virtual void execute(Scene &scene, RenderPipelineContext &ctx) = 0;
@@ -12,6 +12,6 @@ public:
     void setEnabled(bool state) noexcept { enabled = state; }
     bool isEnabled() const noexcept { return enabled; }
 
-protected:
+   protected:
     bool enabled = true;
 };

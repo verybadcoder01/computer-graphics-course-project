@@ -5,7 +5,6 @@
 typedef unsigned int VideoMemoryDesc;
 
 class Primitive : public BaseObject {
-public:
+   public:
     virtual ~Primitive() override = default;
-
 };

@@ -1,33 +1,30 @@
 #include "texture.h"
-#include "exceptions/model/modelExceptions.h"
-#include <utility>
 #include <format>
 #include <source_location>
+#include <utility>
+#include "exceptions/model/modelExceptions.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Texture::Texture(const std::filesystem::path& filepath) {
+Texture::Texture(const std::filesystem::path &filepath) {
     stbi_set_flip_vertically_on_load(true);
 
     int width = 0, height = 0, nrChannels = 0;
-    unsigned char* data = stbi_load(filepath.string().c_str(), &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load(filepath.string().c_str(), &width, &height, &nrChannels, 0);
 
     if (!data) {
         throw FailedToLoadModelException(
             std::format("Failed to load texture file: {}", filepath.string()),
-            std::source_location::current()
-        );
+            std::source_location::current());
     }
 
     GLenum format = GL_RGB;
     if (nrChannels == 1) {
         format = GL_RED;
-    } 
-    else if (nrChannels == 3){
+    } else if (nrChannels == 3) {
         format = GL_RGB;
-    }
-    else if (nrChannels == 4) {
+    } else if (nrChannels == 4) {
         format = GL_RGBA;
     }
 
@@ -50,9 +47,9 @@ Texture::~Texture() {
     cleanup();
 }
 
-Texture::Texture(Texture&& other) noexcept : id(std::exchange(other.id, 0)) {}
+Texture::Texture(Texture &&other) noexcept : id(std::exchange(other.id, 0)) {}
 
-Texture& Texture::operator=(Texture&& other) noexcept {
+Texture &Texture::operator=(Texture &&other) noexcept {
     if (this != &other) {
         cleanup();
         id = std::exchange(other.id, 0);

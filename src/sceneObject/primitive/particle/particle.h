@@ -1,9 +1,9 @@
 #pragma once
 
 #include <random>
+#include <type_traits>
 #include <vector>
 #include "glm/glm.hpp"
-#include <type_traits>
 
 static constexpr double G_norm = -9.81;
 
@@ -12,7 +12,7 @@ typedef glm::vec3 VelocityVec;
 typedef glm::vec3 AccelerationVec;
 
 class Particle {
-public:
+   public:
     Particle() = default;
     ~Particle() = default;
 
@@ -25,7 +25,13 @@ public:
     bool isDead() const noexcept;
     void reset(const PositionVec &pos, const VelocityVec &vel, float nmaxLife);
 
-protected:
+    PositionVec getPosition() const noexcept { return position; }
+    VelocityVec getVelocity() const noexcept { return velocity; }
+    float getRadius() const noexcept { return radius; }
+    void setPosition(const PositionVec &p) noexcept { position = p; }
+    void setVelocity(const VelocityVec &v) noexcept { velocity = v; }
+
+   protected:
     PositionVec position{0};
     VelocityVec velocity{0};
     AccelerationVec acceleration{0, G_norm, 0};
@@ -47,19 +53,21 @@ struct ParticleSystemParams {
 };
 
 class ParticleSystem {
-public:
+   public:
     ParticleSystem(size_t particleCount, const ParticleSystemParams &params);
     ~ParticleSystem() = default;
 
     void update(float dt);
-    const std::vector<Particle>& getParticles() const { return particles; }
-    const ParticleSystemParams& getParams() const noexcept { return params; }
+    const std::vector<Particle> &getParticles() const { return particles; }
+    const ParticleSystemParams &getParams() const noexcept { return params; }
 
-    size_t getParticlesDataSizeBytes() const noexcept { return particles.size() * sizeof(Particle); }
-    const void* getRawParticlesData() const { return particles.data(); }
+    size_t getParticlesDataSizeBytes() const noexcept {
+        return particles.size() * sizeof(Particle);
+    }
+    const void *getRawParticlesData() const { return particles.data(); }
     size_t getParticleStride() const { return sizeof(Particle); }
 
-private:
+   private:
     std::vector<Particle> particles;
     std::random_device rd{};
     const ParticleSystemParams params;

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "sceneObject/baseObject.h"
 #include <vector>
-class ObjectsComposite: public BaseObject {
-public:
+#include "sceneObject/baseObject.h"
+class ObjectsComposite : public BaseObject {
+   public:
     virtual ~ObjectsComposite() = default;
     void add(std::shared_ptr<BaseObject> child);
     void remove(uint32_t index);
 
-protected:
+   protected:
     std::vector<std::shared_ptr<BaseObject>> children;
 };

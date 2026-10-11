@@ -4,15 +4,15 @@
 #include <cstdint>
 
 class ShadowMap {
-public:
+   public:
     ShadowMap() = default;
     ShadowMap(uint32_t width, uint32_t height);
     virtual ~ShadowMap();
 
-    ShadowMap(const ShadowMap&) = delete;
-    ShadowMap& operator=(const ShadowMap&) = delete;
-    ShadowMap(ShadowMap&& other) noexcept;
-    ShadowMap& operator=(ShadowMap&& other) noexcept;
+    ShadowMap(const ShadowMap &) = delete;
+    ShadowMap &operator=(const ShadowMap &) = delete;
+    ShadowMap(ShadowMap &&other) noexcept;
+    ShadowMap &operator=(ShadowMap &&other) noexcept;
 
     void bind() const noexcept;
     void unbind() const noexcept;
@@ -23,7 +23,7 @@ public:
     uint32_t getWidth() const noexcept { return width; }
     uint32_t getHeight() const noexcept { return height; }
 
-protected:
+   protected:
     void cleanup() noexcept;
 
     GLuint fbo = 0;

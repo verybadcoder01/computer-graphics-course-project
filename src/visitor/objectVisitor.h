@@ -6,11 +6,11 @@ class Camera;
 class ParticleEmitter;
 
 class ObjectVisitor {
-public:
+   public:
     virtual ~ObjectVisitor() = default;
 
-    virtual void visit(Model& model) = 0;
-    virtual void visit(LightSource& light) = 0;
-    virtual void visit(Camera& camera) = 0;
-    virtual void visit(ParticleEmitter& emitter) = 0;
+    virtual void visit(Model &model) = 0;
+    virtual void visit(LightSource &light) = 0;
+    virtual void visit(Camera &camera) = 0;
+    virtual void visit(ParticleEmitter &emitter) = 0;
 };

@@ -4,16 +4,16 @@
 #include <filesystem>
 
 class Texture {
-public:
+   public:
     Texture() = default;
-    explicit Texture(const std::filesystem::path& filepath);
+    explicit Texture(const std::filesystem::path &filepath);
     ~Texture();
 
-    Texture(const Texture&) = delete;
-    Texture& operator=(const Texture&) = delete;
+    Texture(const Texture &) = delete;
+    Texture &operator=(const Texture &) = delete;
 
-    Texture(Texture&& other) noexcept;
-    Texture& operator=(Texture&& other) noexcept;
+    Texture(Texture &&other) noexcept;
+    Texture &operator=(Texture &&other) noexcept;
 
     void bind(uint32_t slot = 0) const;
     void unbind() const;
@@ -21,7 +21,7 @@ public:
     GLuint getId() const noexcept { return id; }
     bool isLoaded() const noexcept { return id != 0; }
 
-private:
+   private:
     GLuint id{0};
     void cleanup() noexcept;
 };

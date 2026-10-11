@@ -26,26 +26,13 @@ void GPUBufferHandles::deleteVAO() {
 }
 
 void GPUBufferHandles::deleteInstanceVBO() {
-    if (instanceVBO){
+    if (instanceVBO) {
         glDeleteBuffers(1, &instanceVBO);
     }
 }
 
-template<typename ObjectType>
-const GPUBufferHandles& GPUCacheManager::getOrUpload(const ObjectType &obj, std::function<GPUBufferHandles(const ObjectType&)> upload) {
-    std::weak_ptr<const BaseObject> key = obj.shared_from_this();
-    auto it = gpuCache.find(key);
-
-    if (it == gpuCache.end()) {
-        GPUBufferHandles handles = upload(obj);
-        auto [insertedIt, success] = gpuCache.emplace(key, std::move(handles));
-        it = insertedIt;
-    }
-    return it->second;
-}
-
 void GPUCacheManager::cleanupExpired() {
-    for (auto it = gpuCache.begin(); it != gpuCache.end(); ) {
+    for (auto it = gpuCache.begin(); it != gpuCache.end();) {
         if (it->first.expired()) {
             it = gpuCache.erase(it);
         } else {

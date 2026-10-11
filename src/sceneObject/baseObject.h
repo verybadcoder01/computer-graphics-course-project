@@ -6,20 +6,21 @@
 #include "glm/glm.hpp"
 #include "visitor/objectVisitor.h"
 
-class BaseObject: public std::enable_shared_from_this<BaseObject> {
-public:
+class BaseObject : public std::enable_shared_from_this<BaseObject> {
+   public:
     virtual ~BaseObject() = default;
-    virtual void accept(ObjectVisitor& visitor) = 0;
+    virtual void accept(ObjectVisitor &visitor) = 0;
     virtual void update(float dt) = 0;
-    
+
     glm::mat4 getModelMatrix() const;
     glm::mat4 getWorldMatrix() const;
     virtual bool isVisible() const { return visible; };
+    uint32_t getId() const noexcept { return id; }
 
-    const glm::vec4& getPosition() const noexcept { return position; }
+    const glm::vec4 &getPosition() const noexcept { return position; }
     void setPosition(const glm::vec3 &pos) { position = glm::vec4(pos, 1.0); }
 
-protected:
+   protected:
     uint32_t id;
     std::string name;
     bool visible;

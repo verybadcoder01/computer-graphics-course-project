@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstddef>
+#include "sceneObject/collider/baseCollider.h"
 #include "sceneObject/primitive/model/texture/texture.h"
 #include "sceneObject/primitive/primitive.h"
-#include <cstddef>
 
 struct Vertex {
     glm::vec3 position;
@@ -15,15 +16,17 @@ struct Vertex {
 };
 
 class Model : public Primitive {
-public:
+   public:
     virtual ~Model() override = default;
 
-    const Texture* getTexture() const noexcept;
+    virtual const Texture *getTexture() const noexcept = 0;
+    virtual void setCollider(std::shared_ptr<Collider> coll) noexcept = 0;
+    virtual std::shared_ptr<Collider> getCollider() const = 0;
 
-    size_t getIndexCount() const noexcept;
-    size_t getIndexDataSize() const noexcept;
-    const void* getRawIndexData() const;
-    size_t getVertexDataSize() const noexcept;
-    const void* getRawVertexData() const;
-    size_t getVertexStride() const noexcept;
+    virtual size_t getIndexCount() const noexcept = 0;
+    virtual size_t getIndexDataSize() const noexcept = 0;
+    virtual const void *getRawIndexData() const = 0;
+    virtual size_t getVertexDataSize() const noexcept = 0;
+    virtual const void *getRawVertexData() const = 0;
+    virtual size_t getVertexStride() const noexcept = 0;
 };
