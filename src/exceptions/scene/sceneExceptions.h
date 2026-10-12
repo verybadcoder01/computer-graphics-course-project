@@ -14,3 +14,9 @@ class ObjectKeyNotFoundException : public SceneException {
     ObjectKeyNotFoundException(const std::string &info, const std::source_location &loc) noexcept
         : SceneException(info, loc) {}
 };
+
+class InvalidSceneObjectException : public SceneException {
+   public:
+    InvalidSceneObjectException(const std::string &info, const std::source_location &loc) noexcept
+        : SceneException(info, loc) {}
+};

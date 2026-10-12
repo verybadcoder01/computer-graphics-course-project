@@ -2,11 +2,13 @@
 
 #include <glad/glad.h>
 #include <filesystem>
+#include "glm/glm.hpp"
 
 class Texture {
    public:
     Texture() = default;
     explicit Texture(const std::filesystem::path &filepath);
+    static Texture createSolidColor(const glm::u8vec4 &rgba);
     ~Texture();
 
     Texture(const Texture &) = delete;

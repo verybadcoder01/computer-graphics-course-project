@@ -56,6 +56,7 @@ class Camera : public Primitive {
 
     bool isVisible() const noexcept override { return false; }
     void accept(ObjectVisitor &visitor) override;
+    void update(const SimulationContext &ctx) override {}
 
     glm::mat4 getViewMatrix() const;
     glm::mat4 getProjectionMatrix() const;
@@ -63,6 +64,8 @@ class Camera : public Primitive {
 
     void setAspectRatio(float ratio) noexcept { aspectRatio = ratio; }
     void setFov(float newFov) noexcept { fov = newFov; }
+    float getFov() const noexcept { return fov; }
+    const glm::vec3 &getFront() const noexcept { return front; }
     void setPlanes(float nearP, float farP) noexcept {
         nearPlane = nearP;
         farPlane = farP;

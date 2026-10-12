@@ -21,7 +21,7 @@ void main() {
 
     vec4 viewCenter = u_View * vec4(iPosition, 1.0);
     float diameter = iRadius * 2.0;
-    vec3 billboardViewPos = vec4(viewCenter.xy + aQuadPos.xy * diameter, viewCenter.z, 1.0);
+    vec4 billboardViewPos = vec4(viewCenter.xy + aQuadPos.xy * diameter, viewCenter.z, 1.0);
     ViewPos = billboardViewPos;
     gl_Position = u_Projection * billboardViewPos;
 }

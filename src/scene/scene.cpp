@@ -2,7 +2,8 @@
 #include <memory>
 #include <source_location>
 #include "exceptions/scene/sceneExceptions.h"
-#include "glad/glad.h"
+#include "sceneObject/simulationContext.h"
+#include "visitor/collisionCollectorVisitor/collisionCollectorVisitor.h"
 
 std::shared_ptr<Scene> Scene::getInstance() {
     class Proxy : public Scene {};
@@ -10,14 +11,13 @@ std::shared_ptr<Scene> Scene::getInstance() {
     return instance;
 }
 
-void Scene::genNextKey() noexcept {
-    curKey++;
-}
-
-const Scene::KeyType &Scene::addObject(const ObjectType &obj) {
-    genNextKey();
-    objects[curKey] = obj;
-    return curKey;
+Scene::KeyType Scene::addObject(const ObjectType &obj) {
+    if (!obj) {
+        throw InvalidSceneObjectException("Cannot add a null object to the scene",
+                                          std::source_location::current());
+    }
+    objects[obj->getId()] = obj;
+    return obj->getId();
 }
 
 const Scene::ObjectType &Scene::getObject(const KeyType &key) const {
@@ -37,8 +37,14 @@ void Scene::removeObject(const KeyType &key) {
 }
 
 void Scene::update(float dt) {
+    CollisionCollectorVisitor collector;
+    accept(collector);
+
+    SimulationContext ctx{
+        .dt = dt,
+        .collisionEnv = std::make_shared<const CollisionEnvironment>(collector.getColliders())};
     for (const auto &[_, obj] : objects) {
-        obj->update(dt);
+        obj->update(ctx);
     }
 }
 
@@ -46,9 +52,4 @@ void Scene::accept(ObjectVisitor &visitor) {
     for (const auto &[_, obj] : objects) {
         obj->accept(visitor);
     }
-}
-
-void Scene::clear() {
-    glClearColor(0.1f, 0.1f, 0.12f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

@@ -12,18 +12,19 @@ class Scene {
     static std::shared_ptr<Scene> getInstance();
     virtual ~Scene() = default;
 
-    const KeyType &addObject(const ObjectType &obj);
+    KeyType addObject(const ObjectType &obj);
     const ObjectType &getObject(const KeyType &key) const;
     void removeObject(const KeyType &key);
+    bool contains(const KeyType &key) const { return objects.contains(key); }
+    const std::map<KeyType, ObjectType> &getObjects() const noexcept { return objects; }
+    // call this before the GL context is destroyed
+    void clearObjects() noexcept { objects.clear(); }
 
     void update(float dt);
     void accept(ObjectVisitor &visitor);
-    void clear();
 
    protected:
     std::map<KeyType, ObjectType> objects{};
-    KeyType curKey = 0;
 
     Scene() = default;
-    void genNextKey() noexcept;
 };

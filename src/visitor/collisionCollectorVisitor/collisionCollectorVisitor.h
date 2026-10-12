@@ -15,7 +15,8 @@ class CollisionCollectorVisitor : public ObjectVisitor {
     void visit(Model &) override;
     void visit(ParticleEmitter &) override {}
 
-    CollisionEnvironment getColliders() const { return colliders; }
+    const CollisionEnvironment &getColliders() const noexcept { return colliders; }
+
    protected:
     CollisionEnvironment colliders;
 };

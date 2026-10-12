@@ -54,18 +54,28 @@ void Shader::loadFromFiles(const std::filesystem::path &vertexPath,
         fragmentCode = fShaderStream.str();
     } catch (const std::ifstream::failure &e) {
         throw FailedToReadShaderSourceException(
-            std::format("Failed to read shader source file: %s", e.what()),
+            std::format("Failed to read shader source file: {}", e.what()),
             std::source_location::current());
     }
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
 
-    GLuint vertex = compileShader(CompileType::VERTEX, vShaderCode);
-    checkCompilerErrors(vertex, CompileType::VERTEX);
-    GLuint fragment = compileShader(CompileType::FRAGMENT, fShaderCode);
-    checkCompilerErrors(fragment, CompileType::FRAGMENT);
-    createAndLinkProgram(vertex, fragment);
-    checkCompilerErrors(programId, CompileType::PROGRAM);
+    GLuint vertex = 0, fragment = 0;
+    try {
+        vertex = compileShader(CompileType::VERTEX, vShaderCode);
+        checkCompilerErrors(vertex, CompileType::VERTEX);
+        fragment = compileShader(CompileType::FRAGMENT, fShaderCode);
+        checkCompilerErrors(fragment, CompileType::FRAGMENT);
+        createAndLinkProgram(vertex, fragment);
+        checkCompilerErrors(programId, CompileType::PROGRAM);
+    } catch (...) {
+        glDeleteShader(vertex);
+        glDeleteShader(fragment);
+        cleanup();
+        throw;
+    }
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
 }
 
 GLuint Shader::compileShader(CompileType shaderType, const char *shaderCode) {
@@ -75,7 +85,7 @@ GLuint Shader::compileShader(CompileType shaderType, const char *shaderCode) {
     } else if (shaderType == FRAGMENT) {
         shader = glCreateShader(GL_FRAGMENT_SHADER);
     } else {
-        throw UnknownShaderTypeException(std::format("Unknow shader type %d", (int)shaderType),
+        throw UnknownShaderTypeException(std::format("Unknown shader type {}", (int)shaderType),
                                          std::source_location::current());
     }
     glShaderSource(shader, 1, &shaderCode, nullptr);
@@ -132,7 +142,7 @@ void Shader::checkCompilerErrors(GLuint shader, CompileType type) {
         if (!success) {
             glGetShaderInfoLog(shader, infoLogSize, nullptr, infoLog);
             throw ShaderCompilationFailedException(
-                std::format("Failed to compile shader of type %d: %s", (int)type, infoLog),
+                std::format("Failed to compile shader of type {}: {}", (int)type, infoLog),
                 std::source_location::current());
         }
     } else {
@@ -140,7 +150,7 @@ void Shader::checkCompilerErrors(GLuint shader, CompileType type) {
         if (!success) {
             glGetProgramInfoLog(shader, infoLogSize, nullptr, infoLog);
             throw ShaderLinkingFailedException(
-                std::format("Failed to link shader program: %s", infoLog),
+                std::format("Failed to link shader program: {}", infoLog),
                 std::source_location::current());
         }
     }

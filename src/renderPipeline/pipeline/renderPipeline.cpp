@@ -22,12 +22,12 @@ void RenderPipeline::execute(Scene &scene, int width, int height, GLuint targetF
     context.screenWidth = width;
     context.screenHeight = height;
     context.targetFrameBuffer = targetFBO;
-
-    glBindFramebuffer(GL_FRAMEBUFFER, context.targetFrameBuffer);
-    glViewport(0, 0, width, height);
+    context.shadowMapTextureId = 0;
 
     for (auto &pass : passes) {
         if (pass->isEnabled()) {
+            glBindFramebuffer(GL_FRAMEBUFFER, context.targetFrameBuffer);
+            glViewport(0, 0, width, height);
             pass->execute(scene, context);
         }
     }

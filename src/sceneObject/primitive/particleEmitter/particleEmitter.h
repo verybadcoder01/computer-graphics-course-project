@@ -13,12 +13,17 @@ class ParticleEmitter : public Primitive {
     virtual ~ParticleEmitter() = default;
 
     void accept(ObjectVisitor &visitor) override;
-    void update(float dt) override;
+    void update(const SimulationContext &ctx) override;
     bool isVisible() const override { return visualMesh ? true : false; }
 
     const ParticleSystemParams &getParticlesParams() const noexcept {
         return particles->getParams();
     };
+    void setParticlesParams(const ParticleSystemParams &params) noexcept {
+        particles->setParams(params);
+    }
+    void setParticleCount(size_t count) { particles->setParticleCount(count); }
+    void resetParticles() noexcept { particles->killAll(); }
 
     size_t getParticleCount() const noexcept { return particles->getParticles().size(); }
     size_t getParticlesDataSizeBytes() const noexcept {
@@ -30,4 +35,6 @@ class ParticleEmitter : public Primitive {
    protected:
     std::unique_ptr<ParticleSystem> particles = nullptr;
     std::shared_ptr<Model> visualMesh = nullptr;
+
+    void linkVisualMesh();
 };

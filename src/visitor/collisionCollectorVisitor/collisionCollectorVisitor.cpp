@@ -5,6 +5,10 @@
 
 void CollisionCollectorVisitor::visit(Model &model) {
     std::shared_ptr<Collider> curCollider = model.getCollider();
-    
+    if (!curCollider) {
+        return;
+    }
+
+    curCollider->updateTransform(model.getWorldMatrix());
     colliders.push_back(curCollider);
 }

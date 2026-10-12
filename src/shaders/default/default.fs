@@ -12,6 +12,9 @@ uniform sampler2D u_ShadowMap;
 uniform vec3 u_ViewPos = vec3(0.0, 0.0, 0.0);
 uniform vec3 u_LightPos = vec3(0.0, 10.0, 0.0);
 uniform vec3 u_LightColor = vec3(1.0, 1.0, 1.0);
+// LightType: 0 = directional, 1 = point, 2 = spot (lit as point, no cone yet)
+uniform int u_LightType = 1;
+uniform vec3 u_LightDir = vec3(0.0, -1.0, 0.0);
 
 uniform float u_LightConstant = 1.0;
 uniform float u_LightLinear = 0.09;
@@ -48,7 +51,7 @@ void main() {
 
     // используем диффузную модель света
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(u_LightPos - FragPos);
+    vec3 lightDir = u_LightType == 0 ? normalize(-u_LightDir) : normalize(u_LightPos - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * u_LightColor;
 
@@ -59,8 +62,11 @@ void main() {
     vec3 specular = spec * u_LightColor * 0.4;
 
     // затухание света с расстоянием
-    float distance = length(u_LightPos - FragPos);
-    float attenuation = 1.0 / (u_LightConstant + u_LightLinear * distance + u_LightQuadratic * (distance * distance));
+    float attenuation = 1.0;
+    if (u_LightType != 0) {
+        float distance = length(u_LightPos - FragPos);
+        attenuation = 1.0 / (u_LightConstant + u_LightLinear * distance + u_LightQuadratic * (distance * distance));
+    }
     
     float shadow = calculateShadow(FragPosLightSpace, norm, lightDir);
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * attenuation;

@@ -8,11 +8,14 @@ ShadowDepthVisitor::ShadowDepthVisitor(GPUCacheManager &cache,
     : cache(cache), shader(depthShader), lightSpaceMatrix(lightSpaceMatrix) {}
 
 void ShadowDepthVisitor::visit(Model &model) {
+    if (!model.isVisible()) {
+        return;
+    }
     const auto &handles = cache.get().getOrUpload<Model>(model, MeshUploader::uploadModelToGPU);
 
     shader.get().use();
     shader.get().setMat4("u_LightSpaceMatrix", lightSpaceMatrix);
-    shader.get().setMat4("u_Model", model.getModelMatrix());
+    shader.get().setMat4("u_Model", model.getWorldMatrix());
 
     glBindVertexArray(handles.getVAO());
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(handles.getElementCount()), GL_UNSIGNED_INT,

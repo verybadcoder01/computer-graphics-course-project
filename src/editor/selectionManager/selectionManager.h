@@ -1,11 +1,11 @@
 #pragma once
+#include <functional>
+#include <memory>
 #include "scene/scene.h"
 #include "sceneObject/baseObject.h"
-#include <memory>
-#include <functional>
 
 class SelectionManager {
-public:
+   public:
     using OnSelectionChanged = std::function<void(std::shared_ptr<BaseObject>)>;
 
     void select(std::shared_ptr<BaseObject> object) {
@@ -17,32 +17,24 @@ public:
         }
     }
 
-    void selectByID(const std::shared_ptr<Scene>& scene, uint32_t id) {
-        if (!scene || id == 0) {
+    void selectByID(const std::shared_ptr<Scene> &scene, uint32_t id) {
+        if (!scene || id == 0 || !scene->contains(id)) {
             clearSelection();
             return;
         }
-        const auto& obj = scene->getObject(id);
+        const auto &obj = scene->getObject(id);
         select(obj);
     }
 
-    void clearSelection() {
-        select(nullptr);
-    }
+    void clearSelection() { select(nullptr); }
 
-    std::shared_ptr<BaseObject> getSelected() const noexcept { 
-        return selectedObject.lock(); 
-    }
-    
-    bool hasSelection() const noexcept { 
-        return !selectedObject.expired(); 
-    }
+    std::shared_ptr<BaseObject> getSelected() const noexcept { return selectedObject.lock(); }
 
-    void setCallback(OnSelectionChanged callback) { 
-        onSelectionChanged = std::move(callback); 
-    }
+    bool hasSelection() const noexcept { return !selectedObject.expired(); }
 
-private:
+    void setCallback(OnSelectionChanged callback) { onSelectionChanged = std::move(callback); }
+
+   private:
     std::weak_ptr<BaseObject> selectedObject;
     OnSelectionChanged onSelectionChanged;
 };

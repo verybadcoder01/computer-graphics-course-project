@@ -108,12 +108,12 @@ void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPi
 void Camera::processKeyboard(MoveDirection direction, float deltaTime, float speed) {
     float velocity = speed * deltaTime;
     if (direction == MoveDirection::FORWARD) {
-        position += glm::vec4(front * velocity, 1.0);
+        position += glm::vec4(front * velocity, 0.0);
     } else if (direction == MoveDirection::BACKWARD) {
-        position -= glm::vec4(front * velocity, 1.0);
+        position -= glm::vec4(front * velocity, 0.0);
     } else if (direction == MoveDirection::LEFT) {
-        position -= glm::vec4(right * velocity, 1.0);
+        position -= glm::vec4(right * velocity, 0.0);
     } else if (direction == MoveDirection::RIGHT) {
-        position += glm::vec4(right * velocity, 1.0);
+        position += glm::vec4(right * velocity, 0.0);
     }
 }

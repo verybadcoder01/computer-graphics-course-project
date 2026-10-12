@@ -11,14 +11,18 @@ ObjectPickingVisitor::ObjectPickingVisitor(GPUCacheManager &cache,
       projMatrix(camera.getProjectionMatrix()) {}
 
 void ObjectPickingVisitor::visit(Model &model) {
+    if (!model.isVisible()) {
+        return;
+    }
     const auto &handles = cache.get().getOrUpload<Model>(model, MeshUploader::uploadModelToGPU);
 
     const Shader &shader = pickingShader.get();
     shader.use();
-    shader.setMat4("projection", projMatrix);
-    shader.setMat4("view", viewMatrix);
-    shader.setMat4("model", model.getModelMatrix());
-    shader.setUInt("u_ObjectID", model.getId());
+    shader.setMat4("u_Projection", projMatrix);
+    shader.setMat4("u_View", viewMatrix);
+    shader.setMat4("u_Model", model.getWorldMatrix());
+    // parts of a composite or an emitter's nozzle select the top-level scene object
+    shader.setUInt("u_ObjectID", model.getRootId());
 
     glBindVertexArray(handles.getVAO());
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(handles.getElementCount()), GL_UNSIGNED_INT,

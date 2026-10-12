@@ -1,9 +1,9 @@
 #pragma once
 
-#include <random>
 #include <type_traits>
 #include <vector>
 #include "glm/glm.hpp"
+#include "sceneObject/collider/collisionEnvironment.h"
 
 static constexpr double G_norm = -9.81;
 
@@ -23,6 +23,7 @@ class Particle {
     void update(float dt);
     void decLife(float dt) noexcept;
     bool isDead() const noexcept;
+    void kill() noexcept { life = 0; }
     void reset(const PositionVec &pos, const VelocityVec &vel, float nmaxLife);
 
     PositionVec getPosition() const noexcept { return position; }
@@ -57,9 +58,14 @@ class ParticleSystem {
     ParticleSystem(size_t particleCount, const ParticleSystemParams &params);
     ~ParticleSystem() = default;
 
-    void update(float dt);
+    void update(float dt, const CollisionEnvironment &env);
+    void setOrigin(const PositionVec &newOrigin) noexcept { origin = newOrigin; }
+    void setSpawnRotation(const glm::mat3 &rotation) noexcept { spawnRotation = rotation; }
     const std::vector<Particle> &getParticles() const { return particles; }
     const ParticleSystemParams &getParams() const noexcept { return params; }
+    void setParams(const ParticleSystemParams &newParams) noexcept { params = newParams; }
+    void setParticleCount(size_t count) { particles.resize(count); }
+    void killAll() noexcept;
 
     size_t getParticlesDataSizeBytes() const noexcept {
         return particles.size() * sizeof(Particle);
@@ -69,9 +75,10 @@ class ParticleSystem {
 
    private:
     std::vector<Particle> particles;
-    std::random_device rd{};
-    const ParticleSystemParams params;
+    ParticleSystemParams params;
+    PositionVec origin{0};
+    glm::mat3 spawnRotation{1.0f};
 
-    void updateRange(size_t start, size_t end, float dt);
+    void updateRange(size_t start, size_t end, float dt, const CollisionEnvironment &env);
     void resetParticle(Particle &p);
 };

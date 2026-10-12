@@ -10,13 +10,18 @@
 OpenGLRenderVisitor::OpenGLRenderVisitor(const RenderContext &context,
                                          GPUCacheManager &cacheManager,
                                          const Shader &defaultShader,
-                                         const Shader &particleShader)
-    : ctx(context),
+                                         const Shader &particleShader,
+                                         const Texture &fallbackTexture)
+    : defaultShader(defaultShader),
+      particleShader(particleShader),
+      ctx(context),
       cache(cacheManager),
-      defaultShader(defaultShader),
-      particleShader(particleShader) {}
+      fallbackTexture(fallbackTexture) {}
 
 void OpenGLRenderVisitor::visit(Model &model) {
+    if (!model.isVisible()) {
+        return;
+    }
     const auto &handles = cache.get().getOrUpload<Model>(model, MeshUploader::uploadModelToGPU);
 
     const Shader &defShader = defaultShader.get();
@@ -24,11 +29,13 @@ void OpenGLRenderVisitor::visit(Model &model) {
     defShader.use();
     defShader.setMat4("u_View", rCtx.viewMatrix);
     defShader.setMat4("u_Projection", rCtx.projMatrix);
-    defShader.setMat4("u_Model", model.getModelMatrix());
+    defShader.setMat4("u_Model", model.getWorldMatrix());
     defShader.setVec3("u_ViewPos", rCtx.cameraPos);
 
     if (rCtx.mainLight) {
         defShader.setMat4("u_LightSpaceMatrix", rCtx.mainLight->getLightSpaceMatrix());
+        defShader.setInt("u_LightType", static_cast<int>(rCtx.mainLight->getType()));
+        defShader.setVec3("u_LightDir", rCtx.mainLight->getDirection());
         defShader.setVec3("u_LightPos", rCtx.mainLight->getPosition());
         defShader.setVec3("u_LightColor", rCtx.mainLight->getColor());
 
@@ -40,13 +47,18 @@ void OpenGLRenderVisitor::visit(Model &model) {
 
     if (const auto *tex = model.getTexture(); tex && tex->isLoaded()) {
         tex->bind(0);
-        defShader.setInt("u_Texture", 0);
+    } else {
+        fallbackTexture.get().bind(0);
     }
+    defShader.setInt("u_Texture", 0);
+
     if (rCtx.shadowMapTextureId != 0) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, rCtx.shadowMapTextureId);
-        defShader.setInt("u_ShadowMap", 1);
+    } else {
+        fallbackTexture.get().bind(1);
     }
+    defShader.setInt("u_ShadowMap", 1);
 
     glBindVertexArray(handles.getVAO());
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(handles.getElementCount()), GL_UNSIGNED_INT,

@@ -1,10 +1,11 @@
 #include "particle.h"
+#include <functional>
 #include <random>
 #include <thread>
+#include "sceneObject/collider/baseCollider.h"
 
 void Particle::update(float dt) {
-    constexpr glm::vec3 gravity = {0, G_norm, 0};
-    velocity += (acceleration + gravity) * dt;
+    velocity += acceleration * dt;
     position += velocity * dt;
 }
 
@@ -24,18 +25,20 @@ void Particle::reset(const PositionVec &pos, const VelocityVec &vel, float nmaxL
 }
 
 ParticleSystem::ParticleSystem(size_t particleCount, const ParticleSystemParams &params)
-    : particles(particleCount), rd(), params(params) {
+    : particles(particleCount), params(params) {}
+
+void ParticleSystem::killAll() noexcept {
     for (auto &p : particles) {
-        resetParticle(p);
+        p.kill();
     }
 }
 
-void ParticleSystem::update(float dt) {
+void ParticleSystem::update(float dt, const CollisionEnvironment &env) {
     if (particles.empty()) {
         return;
     }
     if (NUM_THREADS <= 1) {
-        updateRange(0, particles.size(), dt);
+        updateRange(0, particles.size(), dt, env);
         return;
     }
 
@@ -49,7 +52,8 @@ void ParticleSystem::update(float dt) {
         if (i == NUM_THREADS - 1) {
             endIndex = particles.size();
         }
-        workers.emplace_back(&ParticleSystem::updateRange, this, startIndex, endIndex, dt);
+        workers.emplace_back(&ParticleSystem::updateRange, this, startIndex, endIndex, dt,
+                             std::cref(env));
     }
 
     for (auto &thread : workers) {
@@ -59,7 +63,10 @@ void ParticleSystem::update(float dt) {
     }
 }
 
-void ParticleSystem::updateRange(size_t start, size_t end, float dt) {
+void ParticleSystem::updateRange(size_t start,
+                                 size_t end,
+                                 float dt,
+                                 const CollisionEnvironment &env) {
     for (size_t i = start; i < end; ++i) {
         auto &p = particles[i];
         p.decLife(dt);
@@ -69,15 +76,17 @@ void ParticleSystem::updateRange(size_t start, size_t end, float dt) {
         }
 
         p.update(dt);
+        for (const auto &collider : env) {
+            collider->checkCollision(p);
+        }
     }
 }
 
 void ParticleSystem::resetParticle(Particle &p) {
-    thread_local std::mt19937 rng(rd());
+    thread_local std::mt19937 rng(std::random_device{}());
     std::uniform_real_distribution<float> distVel(params.minVel, params.maxVel);
     std::uniform_real_distribution<float> distLife(params.minLife, params.maxLife);
-    p.reset(PositionVec{0, 0, 0},
-            VelocityVec{distVel(rng) + params.startVx, distVel(rng) + params.startVy,
-                        distVel(rng) + params.startVz},
-            distLife(rng));
+    VelocityVec localVelocity{distVel(rng) + params.startVx, distVel(rng) + params.startVy,
+                              distVel(rng) + params.startVz};
+    p.reset(origin, spawnRotation * localVelocity, distLife(rng));
 }

@@ -16,8 +16,8 @@ struct AttenuationParams {
 
 class LightSource : public Primitive {
    public:
-    LightSource(const AttenuationParams &atParams, LightType type = LightType::Point)
-        : atParams(atParams), type(type) {}
+    LightSource(const AttenuationParams &atParams, LightType type = LightType::Directional)
+        : type(type), atParams(atParams) {}
     virtual ~LightSource() override = default;
 
     void accept(ObjectVisitor &visitor) override { visitor.visit(*this); }
@@ -29,7 +29,14 @@ class LightSource : public Primitive {
     const glm::vec3 &getDirection() const { return direction; }
 
     void setColor(const glm::vec3 &col) { color = col; }
+    // color scaled by intensity, as used for shading
     glm::vec3 getColor() const { return color * intensity; }
+    const glm::vec3 &getBaseColor() const noexcept { return color; }
+
+    void setIntensity(float value) noexcept { intensity = value; }
+    float getIntensity() const noexcept { return intensity; }
+    void setCastsShadows(bool value) noexcept { castsShadows = value; }
+    void setType(LightType newType) noexcept { type = newType; }
 
     const AttenuationParams &getAttenuationParams() const { return atParams; }
 
@@ -37,10 +44,10 @@ class LightSource : public Primitive {
     bool createsShadows() const noexcept { return castsShadows; }
     LightType getType() const noexcept { return type; }
 
-    void update(float dt) override {};
+    void update(const SimulationContext &ctx) override {};
 
    protected:
-    LightType type = LightType::Point;
+    LightType type = LightType::Directional;
     glm::vec3 color{1.0f};
     glm::vec3 direction{0, -1, 0};
     float intensity = 1;

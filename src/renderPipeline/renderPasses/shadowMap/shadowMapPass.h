@@ -7,11 +7,10 @@
 
 class ShadowMapPass : public IRenderPass {
    public:
-    ShadowMapPass(std::shared_ptr<ShadowManager> shadowMgr, std::shared_ptr<Shader> shadowShader);
+    explicit ShadowMapPass(std::shared_ptr<ShadowManager> shadowMgr);
 
     void execute(Scene &scene, RenderPipelineContext &rCtx) override;
 
    protected:
     std::shared_ptr<ShadowManager> shadowMgr;
-    std::shared_ptr<Shader> shadowShader;
 };
