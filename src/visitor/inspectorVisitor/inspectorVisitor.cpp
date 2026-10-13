@@ -1,5 +1,6 @@
 #include "inspectorVisitor.h"
 #include <cmath>
+#include <format>
 #include <glm/trigonometric.hpp>
 #include <string>
 #include <vector>
@@ -16,7 +17,7 @@
 namespace {
 
 constexpr float defaultBounce = 0.4f;
-constexpr int maxParticleCount = 200000;
+constexpr float maxEmissionRate = 100000.0f;
 
 template <typename Derived>
 std::shared_ptr<Derived> sharedFrom(BaseObject &object) {
@@ -51,39 +52,28 @@ void InspectorVisitor::visit(ParticleEmitter &emitter) {
     }
     auto self = sharedFrom<ParticleEmitter>(emitter);
 
-    int count = static_cast<int>(emitter.getParticleCount());
-    const int countBefore = count;
-    if (g.dragInt("Particles", count, 10.0f, 0, maxParticleCount)) {
-        emitter.setParticleCount(static_cast<size_t>(count));
-    }
-    tracker.get().track<int>(g, editor, countBefore, count, [self](const int &v) {
-        self->setParticleCount(static_cast<size_t>(v));
-    });
+    g.text(std::format("Alive particles: {}", emitter.getParticleCount()));
 
     const auto setParams = [self](const ParticleSystemParams &p) { self->setParticlesParams(p); };
     ParticleSystemParams params = emitter.getParticlesParams();
-    const ParticleSystemParams paramsBefore = params;
 
-    glm::vec3 startVelocity{params.startVx, params.startVy, params.startVz};
-    if (g.dragFloat3("Start velocity", startVelocity, 0.05f)) {
-        params.startVx = startVelocity.x;
-        params.startVy = startVelocity.y;
-        params.startVz = startVelocity.z;
-        emitter.setParticlesParams(params);
-    }
-    tracker.get().track<ParticleSystemParams>(g, editor, paramsBefore, params, setParams);
-
-    const auto rangeField = [&](const std::string &label, float &value, float lo, float hi) {
+    const auto field = [&](const std::string &label, float &value, float speed, float lo,
+                           float hi) {
         const ParticleSystemParams before = params;
-        if (g.dragFloat(label, value, 0.02f, lo, hi)) {
+        if (g.dragFloat(label, value, speed, lo, hi)) {
             emitter.setParticlesParams(params);
         }
         tracker.get().track<ParticleSystemParams>(g, editor, before, params, setParams);
     };
-    rangeField("Velocity spread min", params.minVel, -100.0f, params.maxVel);
-    rangeField("Velocity spread max", params.maxVel, params.minVel, 100.0f);
-    rangeField("Life min", params.minLife, 0.01f, params.maxLife);
-    rangeField("Life max", params.maxLife, params.minLife, 60.0f);
+    field("Emission rate (1/s)", params.emissionRate, 10.0f, 0.0f, maxEmissionRate);
+    field("Speed min", params.minSpeed, 0.02f, 0.0f, params.maxSpeed);
+    field("Speed max", params.maxSpeed, 0.02f, params.minSpeed, 100.0f);
+    field("Spread angle", params.spreadAngle, 0.1f, 0.0f, 90.0f);
+    field("Life min", params.minLife, 0.05f, 0.01f, params.maxLife);
+    field("Life max", params.maxLife, 0.05f, params.minLife, 120.0f);
+    field("Radius min", params.minRad, 0.0005f, 0.001f, params.maxRad);
+    field("Radius max", params.maxRad, 0.0005f, params.minRad, 0.05f);
+    field("Air drag", params.drag, 0.005f, 0.0f, 5.0f);
 }
 
 void InspectorVisitor::visit(LightSource &light) {

@@ -7,9 +7,7 @@
 
 class ParticleEmitter : public Primitive {
    public:
-    ParticleEmitter(size_t particleCount,
-                    const ParticleSystemParams &params,
-                    std::shared_ptr<Model> visualMesh);
+    ParticleEmitter(const ParticleSystemParams &params, std::shared_ptr<Model> visualMesh);
     virtual ~ParticleEmitter() = default;
 
     void accept(ObjectVisitor &visitor) override;
@@ -22,7 +20,6 @@ class ParticleEmitter : public Primitive {
     void setParticlesParams(const ParticleSystemParams &params) noexcept {
         particles->setParams(params);
     }
-    void setParticleCount(size_t count) { particles->setParticleCount(count); }
     void resetParticles() noexcept { particles->killAll(); }
 
     size_t getParticleCount() const noexcept { return particles->getParticles().size(); }

@@ -8,7 +8,8 @@ out vec4 FragColor;
 
 uniform vec3 u_LightDir = vec3(0.2, 1.0, 0.5);
 uniform vec4 u_WaterColor = vec4(0.2, 0.65, 0.9, 0.65);
-uniform float u_MaxLife = 2.0;
+// particles fade out during the last u_FadeTime seconds of their life
+uniform float u_FadeTime = 1.0;
 
 void main() {
     if (Life <= 0.0) {
@@ -34,7 +35,7 @@ void main() {
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     float edgeAlpha = smoothstep(1.0, 0.85, distSq);
-    float lifeAlpha = clamp(Life / u_MaxLife, 0.0, 1.0);
+    float lifeAlpha = clamp(Life / u_FadeTime, 0.0, 1.0);
 
     vec3 finalRGB = u_WaterColor.rgb * diff + vec3(1.0) * spec;
     float finalAlpha = u_WaterColor.a * edgeAlpha * lifeAlpha;

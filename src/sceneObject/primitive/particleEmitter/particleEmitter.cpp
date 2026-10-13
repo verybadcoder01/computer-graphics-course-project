@@ -3,11 +3,10 @@
 #include "sceneObject/primitive/particle/particle.h"
 #include "visitor/objectVisitor.h"
 
-ParticleEmitter::ParticleEmitter(size_t particleCount,
-                                 const ParticleSystemParams &params,
+ParticleEmitter::ParticleEmitter(const ParticleSystemParams &params,
                                  std::shared_ptr<Model> visualMesh)
     : visualMesh(std::move(visualMesh)) {
-    particles = std::make_unique<ParticleSystem>(particleCount, params);
+    particles = std::make_unique<ParticleSystem>(params);
 }
 
 void ParticleEmitter::linkVisualMesh() {

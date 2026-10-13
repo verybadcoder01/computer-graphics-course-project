@@ -86,7 +86,6 @@ void OpenGLRenderVisitor::visit(ParticleEmitter &emitter) {
         pShader.setVec3("u_LightDir", viewLightDir);
     }
     pShader.setVec4("u_WaterColor", glm::vec4(0.2f, 0.65f, 0.9f, 0.65f));
-    pShader.setFloat("u_MaxLife", emitter.getParticlesParams().maxLife);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

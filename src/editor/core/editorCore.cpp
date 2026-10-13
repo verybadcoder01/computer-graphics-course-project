@@ -129,8 +129,7 @@ std::shared_ptr<BaseObject> EditorCore::createObject(const LibraryEntry &entry) 
         return model;
     }
 
-    auto emitter = std::make_shared<ParticleEmitter>(defaultParticleCount, ParticleSystemParams{},
-                                                     std::move(model));
+    auto emitter = std::make_shared<ParticleEmitter>(ParticleSystemParams{}, std::move(model));
     emitter->setName(entry.name);
     return emitter;
 }

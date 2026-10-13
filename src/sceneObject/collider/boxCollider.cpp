@@ -60,16 +60,31 @@ bool BoxCollider::checkCollision(Particle &p) const {
         return true;
     }
 
-    int faceAxis = 0;
-    float minDepth = halfExtents[0] - std::abs(local[0]);
-    for (int i = 1; i < 3; ++i) {
-        float depth = halfExtents[i] - std::abs(local[i]);
-        if (depth < minDepth) {
+    const glm::vec3 velocity = p.getVelocity();
+    int faceAxis = -1, nearestAxis = 0;
+    float minTime = 0.0f, minDepth = 0.0f;
+    for (int i = 0; i < 3; ++i) {
+        const float side = local[i] >= 0.0f ? 1.0f : -1.0f;
+        const float depth = halfExtents[i] - std::abs(local[i]);
+        const float inwardSpeed = -side * glm::dot(velocity, axes[i]);
+        if (i == 0 || depth < minDepth) {
             minDepth = depth;
-            faceAxis = i;
+            nearestAxis = i;
+        }
+        if (inwardSpeed > 1e-6f) {
+            const float timeSinceEntry = depth / inwardSpeed;
+            if (faceAxis < 0 || timeSinceEntry < minTime) {
+                minTime = timeSinceEntry;
+                faceAxis = i;
+            }
         }
     }
-    glm::vec3 normal = axes[faceAxis] * (local[faceAxis] >= 0.0f ? 1.0f : -1.0f);
-    resolve(p, pos + normal * (minDepth + particleRadius), normal);
+    if (faceAxis < 0) {
+        faceAxis = nearestAxis;
+    }
+
+    const float depth = halfExtents[faceAxis] - std::abs(local[faceAxis]);
+    const glm::vec3 normal = axes[faceAxis] * (local[faceAxis] >= 0.0f ? 1.0f : -1.0f);
+    resolve(p, pos + normal * (depth + particleRadius), normal);
     return true;
 }

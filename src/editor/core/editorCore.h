@@ -63,7 +63,6 @@ class EditorCore : public std::enable_shared_from_this<EditorCore> {
     ModelLibrary library;
     float lastFrameTime = 0;
 
-    static constexpr size_t defaultParticleCount = 5000;
     static constexpr float spawnDistance = 5.0f;
     static constexpr float maxGroundDistance = 100.0f;
 };
